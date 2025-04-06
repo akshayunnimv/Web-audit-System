@@ -1,0 +1,130 @@
+.feedback-wrapper {
+  /* margin-left: 220px;  */
+  padding: 2rem;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background-color: #f5f5f5; /* Optional if you want a soft background */
+}
+
+.feedback-container {
+  background-color: #fff;
+  color: #1e1e2f;
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.feedback-container h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+
+.feedback-container textarea {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  color: #333;
+  font-size: 1rem;
+  resize: vertical;
+  transition: border 0.3s ease;
+  box-sizing: border-box;
+}
+
+.feedback-container textarea:focus {
+  border-color: #ff4dd2;
+  outline: none;
+}
+
+.feedback-container button {
+  margin-top: 1rem;
+  padding: 10px 20px;
+  background-color: #fff;
+  border: 2px solid #222;
+  color: #1e1e2f;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.feedback-container button:hover {
+  color: #ff4dd2;
+  border-color: #ff4dd2;
+  transform: scale(1.05);
+}
+
+.feedback-message {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 1rem;
+  color: #ff4dd2;
+}
+.feedback-filter-buttons {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.feedback-filter-buttons button {
+  margin: 0 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #fff;
+  border: 2px solid hotpink;
+  color: #1e1e2f;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.feedback-filter-buttons button:hover {
+  background-color: hotpink;
+  color: white;
+  box-shadow: 0 0 10px hotpink;
+}
+
+/* Sliding window */
+.feedback-slide {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 350px;
+  height: 100vh;
+  background-color: #1e1e2f;
+  box-shadow: -3px 0 20px rgba(255, 20, 147, 0.4);
+  padding: 1.5rem;
+  overflow-y: auto;
+  color: hotpink;
+  transition: right 0.4s ease;
+  z-index: 999;
+}
+
+.feedback-slide.visible {
+  right: 0;
+}
+
+.feedback-slide .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 1.5rem;
+  color: hotpink;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.feedback-card {
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #2a2a3d;
+}

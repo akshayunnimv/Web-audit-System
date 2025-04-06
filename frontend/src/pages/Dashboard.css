@@ -1,0 +1,23 @@
+.dashboard-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.dashboard-container {
+  padding-left: 250px;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 20px;
+  min-width: 0;
+  overflow-y: auto;
+  margin-left: 220px; /* Match sidebar width */
+}
+
+.content-area {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto; /* Allows scrolling inside content */
+}

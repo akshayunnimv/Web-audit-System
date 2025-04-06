@@ -1,0 +1,18 @@
+.admin-dashboard {
+  display: flex;
+  height: 100vh;
+}
+
+.admin-main-content {
+  margin-left: 250px; /* same as sidebar width */
+  padding: auto;
+  width: calc(100% - 250px);
+  overflow-y: auto;
+}
+
+.admin-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
