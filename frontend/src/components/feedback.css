@@ -3,7 +3,7 @@
   padding: 2rem;
   min-height: 100vh;
   box-sizing: border-box;
-  background-color: #f5f5f5; /* Optional if you want a soft background */
+  background-color: white; /* Optional if you want a soft background */
 }
 
 .feedback-container {
@@ -121,10 +121,10 @@
   cursor: pointer;
 }
 
-.feedback-card {
+/* .feedback-card {
   border: 1px solid #444;
   border-radius: 10px;
   padding: 1rem;
   margin-bottom: 1rem;
   background-color: #2a2a3d;
-}
+} */

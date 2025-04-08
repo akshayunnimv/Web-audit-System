@@ -10,7 +10,7 @@ const AdminReview = () => {
   const [selectedFeedback, setSelectedFeedback] = useState(null);
   const [replyText, setReplyText] = useState("");
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 6;
 
   useEffect(() => {
     fetchData();

@@ -68,7 +68,7 @@ const DashboardContent = ({ user }) => {
 
       <div className="card-container">
         {/* URLs Crawled Card */}
-        <div className="card">
+        <div className="card-dash">
           <h3>URLs Crawled: {urlsCount}</h3>
           <Chart
             type="donut"
@@ -84,7 +84,7 @@ const DashboardContent = ({ user }) => {
         </div>
 
         {/* Issues Card */}
-        <div className="card">
+        <div className="card-dash">
           <h3>Total Issues Detected: {totalIssues}</h3>
           <Chart
             type="donut"
