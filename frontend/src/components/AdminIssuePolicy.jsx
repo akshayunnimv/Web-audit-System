@@ -15,6 +15,7 @@ const AdminIssuePolicy = () => {
     type: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -22,12 +23,17 @@ const AdminIssuePolicy = () => {
   }, []);
 
   const fetchIssuePolicies = async () => {
-    const { data, error } = await supabase.from("tbl_issuepolicy").select("*") .order("issue_id", { ascending: true });
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("tbl_issuepolicy")
+      .select("*")
+      .order("issue_id", { ascending: true });
     if (error) {
       console.error("Error fetching:", error);
     } else {
       setIssuePolicies(data);
     }
+    setLoading(false);
   };
 
   const handleAddOrUpdate = async () => {
@@ -36,6 +42,7 @@ const AdminIssuePolicy = () => {
       return alert("Please fill all fields");
     }
 
+    setLoading(true);
     if (selectedRow) {
       // Update
       const { error } = await supabase
@@ -56,10 +63,12 @@ const AdminIssuePolicy = () => {
         resetForm();
       }
     }
+    setLoading(false);
   };
 
   const handleDelete = async () => {
     if (!selectedRow) return alert("No row selected.");
+    setLoading(true);
     const { error } = await supabase
       .from("tbl_issuepolicy")
       .delete()
@@ -69,6 +78,7 @@ const AdminIssuePolicy = () => {
       fetchIssuePolicies();
       setSelectedRow(null);
     }
+    setLoading(false);
   };
 
   const resetForm = () => {
@@ -87,6 +97,39 @@ const AdminIssuePolicy = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  const renderPagination = () => {
+    const totalPages = Math.ceil(issuePolicies.length / itemsPerPage);
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="pagination">
+        <button 
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          &laquo;
+        </button>
+        {currentPage > 1 && (
+          <button onClick={() => setCurrentPage(1)}>1</button>
+        )}
+        {currentPage > 2 && <span>...</span>}
+        <button className="active-page">{currentPage}</button>
+        {currentPage < totalPages - 1 && <span>...</span>}
+        {currentPage < totalPages && (
+          <button onClick={() => setCurrentPage(totalPages)}>
+            {totalPages}
+          </button>
+        )}
+        <button 
+          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+        >
+          &raquo;
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div className="admin-content">
@@ -116,55 +159,53 @@ const AdminIssuePolicy = () => {
         </div>
       </div>
 
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>Select</th>
-            <th>Sl. No</th>
-            <th>Issue Name</th>
-            <th>Description</th>
-            <th>Recommendation</th>
-            <th>Severity</th>
-            <th>Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedData.map((row, index) => (
-            <tr
-              key={row.issue_id}
-              onClick={() => setSelectedRow(row)}
-              className={selectedRow?.issue_id === row.issue_id ? "selected-row" : ""}
-            >
-              <td>
-                <input
-                  type="radio"
-                  name="select"
-                  checked={selectedRow?.issue_id === row.issue_id}
-                  readOnly
-                />
-              </td>
-              <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-              <td>{row.issue_name}</td>
-              <td>{row.description}</td>
-              <td>{row.recommendation}</td>
-              <td>{row.severity}</td>
-              <td>{row.type}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="pagination">
-        {Array.from({ length: Math.ceil(issuePolicies.length / itemsPerPage) }).map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            className={currentPage === i + 1 ? "active-page" : ""}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+      {loading ? (
+        <div className="loading-animation">
+          <div className="spinner"></div>
+          <p>Loading...</p>
+        </div>
+      ) : (
+        <>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Select</th>
+                <th>Sl. No</th>
+                <th>Issue Name</th>
+                <th>Description</th>
+                <th>Recommendation</th>
+                <th>Severity</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedData.map((row, index) => (
+                <tr
+                  key={row.issue_id}
+                  onClick={() => setSelectedRow(row)}
+                  className={selectedRow?.issue_id === row.issue_id ? "selected-row" : ""}
+                >
+                  <td>
+                    <input
+                      type="radio"
+                      name="select"
+                      checked={selectedRow?.issue_id === row.issue_id}
+                      readOnly
+                    />
+                  </td>
+                  <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                  <td>{row.issue_name}</td>
+                  <td>{row.description}</td>
+                  <td>{row.recommendation}</td>
+                  <td>{row.severity}</td>
+                  <td>{row.type}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {renderPagination()}
+        </>
+      )}
 
       {showPopup && (
         <div className="popup-overlay">
@@ -190,23 +231,26 @@ const AdminIssuePolicy = () => {
               value={formData.severity}
               onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
             >
-            <option value="">Select Severity</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
+              <option value="">Select Severity</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
             </select>
             <select
-             value={formData.type}
+              value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
             >
-            <option value="">Select Type</option>
-             <option value="seo">SEO</option>
-            <option value="ui/ux">UI/UX</option>
-        
-          </select>
+              <option value="">Select Type</option>
+              <option value="seo">SEO</option>
+              <option value="ui/ux">UI/UX</option>
+            </select>
             <div className="popup-actions">
-              <button onClick={handleAddOrUpdate}>{selectedRow ? "Update" : "Add"}</button>
-              <button onClick={resetForm}>Cancel</button>
+              <button onClick={handleAddOrUpdate} disabled={loading}>
+                {loading ? "Processing..." : selectedRow ? "Update" : "Add"}
+              </button>
+              <button onClick={resetForm} disabled={loading}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>

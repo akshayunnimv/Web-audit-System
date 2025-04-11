@@ -74,6 +74,24 @@ const AdminReview = () => {
       fetchData();
     }
   };
+  const handleDelete = async (feedback_id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this feedback?");
+    if (!confirmDelete) return;
+  
+    const { error } = await supabase
+      .from("tbl_feedback")
+      .delete()
+      .eq("feedback_id", feedback_id);
+  
+    if (error) {
+      alert("Error deleting feedback!");
+      console.error("Delete error:", error);
+    } else {
+      alert("Feedback deleted successfully.");
+      fetchData(); // Refresh the list
+    }
+  };
+  
 
   return (
     <div className="admin-content">
@@ -86,13 +104,20 @@ const AdminReview = () => {
             <p><strong>Feedback:</strong> {item.feedback}</p>
             <p><strong>Date:</strong> {formatDate(item.date)}</p>
             <p><strong>Reply:</strong> {item.reply || "N/A"}</p>
-            <button onClick={() => {
+            <button className="reply-btn" 
+            onClick={() => {
               setSelectedFeedback(item);
               setReplyText(item.reply || "");
               setShowPopup(true);
             }}>
               Reply
             </button>
+            <button className="delete-btn"
+              onClick={() => handleDelete(item.feedback_id)}
+              >
+              Delete
+            </button>
+
           </div>
         ))}
       </div>

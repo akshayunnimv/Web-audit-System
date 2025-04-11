@@ -18,7 +18,7 @@
     margin-top: 0;
   }
   
-  .feedback-card button {
+  .reply-btn {
     margin-top: 5px;
     background-color: #1f2a36;
     color: white;
@@ -28,9 +28,22 @@
     cursor: pointer;
   }
   
-  .feedback-card button:hover {
+  .reply-btn:hover {
     background-color:hotpink;
     border-color: pink;
+  }
+  .delete-btn {
+    background-color: red;
+    padding: 7px 14px;
+    margin-left:2px; 
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    color:#fff;
+  }
+
+  .delete-btn:hover{
+    background-color: #b042b2;
   }
   
   .serial-number {

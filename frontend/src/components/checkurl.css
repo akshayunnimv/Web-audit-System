@@ -81,6 +81,7 @@
   border: 2px solid #68a4c4;
   padding: 10px 20px;
   border-radius: 6px;
+  margin-left: 10px;
   cursor: pointer;
   color: #333;
   font-weight: bold;
@@ -107,4 +108,9 @@
 @keyframes shimmer {
   0% { background-position: 100% 0; }
   100% { background-position: -100% 0; }
+}
+.error-message {
+  color: red;
+  margin-top: 10px;
+  font-weight: bold;
 }

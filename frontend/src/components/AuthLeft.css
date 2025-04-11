@@ -30,11 +30,14 @@
     font-weight: bold;
     z-index: 1;
     font-family: 'Audiowide', sans-serif;
-    
+    transition: text-shadow 0.3s ease;
     font-weight: 600;
     /* text-transform: uppercase; */
     letter-spacing: 2px;
-    color:whitw;
+    color:white;
+    
+  }
+  .auth-logo:hover{
     text-shadow: 0 0 10px #ff1493, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
   }
   

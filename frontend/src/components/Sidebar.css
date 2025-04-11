@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Lilita+One&display=swap');
 .sidebar {
   width: 250px;
   height: 100vh;
@@ -14,6 +15,7 @@
   padding: 0;
 }
 
+
 .sidebar li {
   padding: 15px 20px;
   margin: 10px;
@@ -28,4 +30,50 @@
   background: rgba(255, 255, 255, 0.2);
   box-shadow: 0px 0px 15px #00f7ff; /* Neon glow effect */
   transition: 0.3s ease-in-out;
+}
+.side-icon{
+  width:20px;
+  height:20px;
+  /* padding-top: 2px; */
+}
+.app-name{
+  margin-left: 40px;
+  font-family: "Lilita One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 28px;
+  color: white;
+  transition: text-shadow 0.3s ease;
+}
+.app-name:hover{
+  text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+}
+.sidebar-profile {
+  margin-top:347px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 20px;
+  cursor: pointer;
+  /* border: 1px solid #eee; */
+  background: transparent;
+  box-shadow: 1px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-profile:hover {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0px 0px 15px #00f7ff; /* Neon glow effect */
+  transition: 0.3s ease-in-out;
+}
+
+.profile-picture {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-name {
+  font-weight: bold;
+  font-size: 14px;
 }

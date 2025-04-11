@@ -102,6 +102,12 @@ async def check_url(request: URLRequest):
     except Exception as e:
         
         supabase.table("tbl_crawledurls").update({"status": "failed"}).eq("url_id", url_id).execute()
+        supabase.table("tbl_log").insert({
+        "user_id": user_id,
+        "url_id": url_id,
+        "action": "URL Checking Failed",
+        "timestamp": timestamp
+         }).execute()
         raise HTTPException(status_code=500, detail=f"Error during crawl or issue analysis: {str(e)}")
     
 class FeedbackRequest(BaseModel):
@@ -118,6 +124,24 @@ async def submit_feedback(request: FeedbackRequest):
         return {"message": "Feedback submitted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to submit feedback: {str(e)}")
+
+class ReportLogRequest(BaseModel):
+    user_id: UUID
+    url_id: int
+
+@app.post("/log-report/")
+async def log_report(request: ReportLogRequest):
+    try:
+        timestamp = datetime.now().isoformat()
+        supabase.table("tbl_log").insert({
+            "user_id": str(request.user_id),
+            "url_id": request.url_id,
+            "action": "Report Generated",
+            "timestamp": timestamp
+        }).execute()
+        return {"message": "Report logged successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to log report: {str(e)}")
 
 
 

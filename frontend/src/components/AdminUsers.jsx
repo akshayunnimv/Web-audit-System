@@ -52,7 +52,7 @@ const AdminUsers = () => {
         {currentUsers.map((user, index) => (
           <div className="user-card" key={index}>
             <img
-              src={user.profile_picture || "/default-avatar.png"}
+              src={user.profile_picture || "/default-image.png"}
               alt="Profile"
               className="profile-pic"
               onError={(e) => {

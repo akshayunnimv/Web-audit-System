@@ -89,7 +89,7 @@ const Feedback = () => {
         <button className="close-btn" onClick={() => setSlideVisible(false)}>×</button>
         {userFeedbacks.length > 0 ? (
           userFeedbacks.map((fb, idx) => (
-            <div key={fb.feedback_id} className="feedback-card">
+            <div key={fb.feedback_id} className="feedback-carduser">
               <p><strong>#{idx + 1}</strong></p>
               <p><strong>Feedback:</strong> {fb.feedback}</p>
               <p><strong>Date:</strong> {new Date(fb.date).toLocaleString()}</p>

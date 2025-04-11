@@ -5,6 +5,8 @@ import Sidebar from "../components/Sidebar";
 import DashboardContent from "../components/DashboardContent";
 import CheckURL from "../components/CheckURL";
 import Feedback from "../components/Feedback";
+import UserProfile from "../components/UserProfile"
+import UserActivity from "../components/UserActivity";
 import "./Dashboard.css";
 
 
@@ -33,6 +35,8 @@ const Dashboard = ({ user }) => {
           <Route path="/" element={<DashboardContent user={user} />} />  
           <Route path="checkurl" element={<CheckURL user={user} />} />  
           <Route path="feedback" element={<Feedback user={user}/>} />
+          <Route path="userprofile" element={<UserProfile user={user}/>} />
+          <Route path="useractivity" element={<UserActivity user={user}/>}/>
         </Routes>
       </div>
     </div>
