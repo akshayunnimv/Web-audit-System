@@ -29,8 +29,8 @@
   }
   
   .reply-btn:hover {
-    background-color:hotpink;
-    border-color: pink;
+    background-color:#ff1493;
+    
   }
   .delete-btn {
     background-color: red;
@@ -43,7 +43,7 @@
   }
 
   .delete-btn:hover{
-    background-color: #b042b2;
+    background-color: #ab0d0d;
   }
   
   .serial-number {

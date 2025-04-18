@@ -9,6 +9,7 @@ const AdminReview = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
   const [replyText, setReplyText] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const itemsPerPage = 6;
 
@@ -17,36 +18,39 @@ const AdminReview = () => {
   }, []);
 
   const fetchData = async () => {
-  const { data: feedbackData, error: feedbackError } = await supabase
-    .from("tbl_feedback")
-    .select("*")
-    .order("date", { ascending: false });
+    setLoading(true);
+    const { data: feedbackData, error: feedbackError } = await supabase
+      .from("tbl_feedback")
+      .select("*")
+      .order("date", { ascending: false });
 
-  if (feedbackError) {
-    console.error("Error fetching feedback:", feedbackError);
-    return;
-  }
+    if (feedbackError) {
+      console.error("Error fetching feedback:", feedbackError);
+      setLoading(false);
+      return;
+    }
 
-  const { data: userData, error: userError } = await supabase
-    .from("tbl_user")
-    .select("id, name");
+    const { data: userData, error: userError } = await supabase
+      .from("tbl_user")
+      .select("id, name");
 
-  if (userError) {
-    console.error("Error fetching users:", userError);
-    return;
-  }
+    if (userError) {
+      console.error("Error fetching users:", userError);
+      setLoading(false);
+      return;
+    }
 
-  const userMap = {};
-  if (userData && Array.isArray(userData)) {
-    userData.forEach((user) => {
-      userMap[user.id] = user.name;
-    });
-  }
+    const userMap = {};
+    if (userData && Array.isArray(userData)) {
+      userData.forEach((user) => {
+        userMap[user.id] = user.name;
+      });
+    }
 
-  setFeedbacks(feedbackData || []);
-  setUsers(userMap);
-};
-
+    setFeedbacks(feedbackData || []);
+    setUsers(userMap);
+    setLoading(false);
+  };
 
   const paginatedFeedback = feedbacks.slice(
     (currentPage - 1) * itemsPerPage,
@@ -60,12 +64,14 @@ const AdminReview = () => {
 
   const handleReplySubmit = async () => {
     if (!replyText.trim()) return alert("Reply cannot be empty");
+    setLoading(true);
 
     const { error } = await supabase
       .from("tbl_feedback")
       .update({ reply: replyText })
       .eq("feedback_id", selectedFeedback.feedback_id);
 
+    setLoading(false);
     if (!error) {
       alert("Reply added!");
       setShowPopup(false);
@@ -74,66 +80,104 @@ const AdminReview = () => {
       fetchData();
     }
   };
+
   const handleDelete = async (feedback_id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this feedback?");
     if (!confirmDelete) return;
-  
+    setLoading(true);
+
     const { error } = await supabase
       .from("tbl_feedback")
       .delete()
       .eq("feedback_id", feedback_id);
-  
+
+    setLoading(false);
     if (error) {
       alert("Error deleting feedback!");
       console.error("Delete error:", error);
     } else {
       alert("Feedback deleted successfully.");
-      fetchData(); // Refresh the list
+      fetchData();
     }
   };
-  
+
+  const renderPagination = () => {
+    const totalPages = Math.ceil(feedbacks.length / itemsPerPage);
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="pagination">
+        <button 
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          &laquo;
+        </button>
+        {currentPage > 1 && (
+          <button onClick={() => setCurrentPage(1)}>1</button>
+        )}
+        {currentPage > 2 && <span>...</span>}
+        <button className="active-page">{currentPage}</button>
+        {currentPage < totalPages - 1 && <span>...</span>}
+        {currentPage < totalPages && (
+          <button onClick={() => setCurrentPage(totalPages)}>
+            {totalPages}
+          </button>
+        )}
+        <button 
+          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+        >
+          &raquo;
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div className="admin-content">
       <h2>Feedback Review</h2>
-      <div className="feedback-list">
-        {paginatedFeedback.map((item, index) => (
-          <div className="feedback-card" key={item.feedback_id}>
-            <div className="serial-number">{(currentPage - 1) * itemsPerPage + index + 1}</div>
-            <h3>{users[item.user_id] || "Unknown User"}</h3>
-            <p><strong>Feedback:</strong> {item.feedback}</p>
-            <p><strong>Date:</strong> {formatDate(item.date)}</p>
-            <p><strong>Reply:</strong> {item.reply || "N/A"}</p>
-            <button className="reply-btn" 
-            onClick={() => {
-              setSelectedFeedback(item);
-              setReplyText(item.reply || "");
-              setShowPopup(true);
-            }}>
-              Reply
-            </button>
-            <button className="delete-btn"
-              onClick={() => handleDelete(item.feedback_id)}
-              >
-              Delete
-            </button>
-
+      
+      {loading ? (
+        <div className="loading-animation">
+          <div className="spinner"></div>
+          <p>Loading...</p>
+        </div>
+      ) : (
+        <>
+          <div className="feedback-list">
+            {paginatedFeedback.map((item, index) => (
+              <div className="feedback-card" key={item.feedback_id}>
+                <div className="serial-number">{(currentPage - 1) * itemsPerPage + index + 1}</div>
+                <h3>{users[item.user_id] || "Unknown User"}</h3>
+                <p><strong>Feedback:</strong> {item.feedback}</p>
+                <p><strong>Date:</strong> {formatDate(item.date)}</p>
+                <p><strong>Reply:</strong> {item.reply || "N/A"}</p>
+                <button 
+                  className="reply-btn" 
+                  onClick={() => {
+                    setSelectedFeedback(item);
+                    setReplyText(item.reply || "");
+                    setShowPopup(true);
+                  }}
+                  disabled={loading}
+                >
+                  Reply
+                </button>
+                <button 
+                  className="delete-btn"
+                  onClick={() => handleDelete(item.feedback_id)}
+                  disabled={loading}
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Pagination */}
-      <div className="pagination">
-        {Array.from({ length: Math.ceil(feedbacks.length / itemsPerPage) }).map((_, i) => (
-          <button
-            key={i}
-            className={currentPage === i + 1 ? "active-page" : ""}
-            onClick={() => setCurrentPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+          {renderPagination()}
+        </>
+      )}
 
       {/* Reply Popup */}
       {showPopup && (
@@ -145,10 +189,15 @@ const AdminReview = () => {
               onChange={(e) => setReplyText(e.target.value)}
               rows="4"
               placeholder="Write your reply here..."
+              disabled={loading}
             ></textarea>
             <div className="popup-actions">
-              <button onClick={handleReplySubmit}>Submit</button>
-              <button onClick={() => setShowPopup(false)}>Cancel</button>
+              <button onClick={handleReplySubmit} disabled={loading}>
+                {loading ? "Submitting..." : "Submit"}
+              </button>
+              <button onClick={() => setShowPopup(false)} disabled={loading}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>

@@ -68,16 +68,25 @@ const AdminIssuePolicy = () => {
 
   const handleDelete = async () => {
     if (!selectedRow) return alert("No row selected.");
+    
+    // Add confirmation dialog
+    const confirmDelete = window.confirm("Are you sure you want to delete this issue policy?");
+    if (!confirmDelete) return; // Exit if user cancels
+  
     setLoading(true);
     const { error } = await supabase
       .from("tbl_issuepolicy")
       .delete()
       .eq("issue_id", selectedRow.issue_id);
+    
     if (!error) {
-      alert("Deleted!");
+      alert("Deleted successfully!");
       fetchIssuePolicies();
       setSelectedRow(null);
+    } else {
+      alert("Error deleting issue policy!");
     }
+    
     setLoading(false);
   };
 

@@ -256,7 +256,7 @@ const UserActivity = () => {
   
     logs.forEach((log, index) => {
       const url = log.tbl_crawledurls?.url || "N/A";
-      const formattedTime = new Date(log.timestamp).toLocaleString();
+      const formattedTime = `"${new Date(log.timestamp).toLocaleString()}"`;
       rows.push([index + 1, url, log.action, formattedTime]);
     });
   
