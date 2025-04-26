@@ -7,12 +7,14 @@ const UserProfile = () => {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ name: "", phone: "", profile_picture: "" });
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchUserProfile();
   }, []);
 
   const fetchUserProfile = async () => {
+    setLoading(true); // Start loading
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -33,6 +35,7 @@ const UserProfile = () => {
         });
       }
     }
+    setLoading(false); // End loading
   };
 
   const handleImageUpload = async (e) => {
@@ -114,8 +117,21 @@ const UserProfile = () => {
       fetchUserProfile();
     }
   };
+  
+  if (loading) {
+    return (
+      <div className="loading-animation">
+        <div className="spinner"></div>
+        <p>Loading profile...</p>
+      </div>
+    );
+  }
+
 
   if (!userData) return <p>Loading profile...</p>;
+  
+
+
 
   return (
     <div className="user-profile-container">

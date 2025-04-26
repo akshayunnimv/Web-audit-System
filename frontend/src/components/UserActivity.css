@@ -116,3 +116,18 @@
     border: none;
   }
   
+  
+  .generate-report-btn {
+    padding: 5px 10px;
+    background: #e91e63;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.3s;
+  }
+  
+  .generate-report-btn:hover {
+    background: #c2185b;
+  }

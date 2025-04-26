@@ -1,4 +1,4 @@
-/* Global Styles */
+@import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Lilita+One&display=swap');
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -24,12 +24,15 @@ body {
   color: whitesmoke;
   font-size: 24px;
   font-weight: bold;
+  font-family: 'Audiowide', sans-serif;
+  transition: text-shadow 0.3s ease;
+  font-weight: 600;
 }
 
 .nav-links a {
   color:whitesmoke;
   /* margin-left: 20px; */
-  margin-right: 35px;
+  margin-right: 50px;
   text-decoration: none;
   font-size: 18px;
   transition: 0.3s;
@@ -176,3 +179,55 @@ body {
     line-height: 1.6;
     text-shadow: 1px 1px 5px rgba(192, 192, 192, 0.5); /* Soft glow effect */
   }
+  
+  /* Issues Listing Styles */
+.issues-container {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+  gap: 30px;
+  
+}
+
+.issues-column {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 5px rgba(0,0,0,0.1);
+   max-width: 500px;
+} 
+
+.issues-heading {
+  
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  text-align: center;
+  border-bottom: 2px solid #ff1493;
+  padding-bottom: 8px;
+}
+
+.issues-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.issues-list li {
+  padding: 8px 0;
+  border-bottom: 1px dashed #ddd;
+  color: #2F4F4F;
+}
+
+.issues-list li:last-child {
+  border-bottom: none;
+}
+
+.issues-summary {
+  text-align: center;
+  font-style: italic;
+  margin: 25px 0;
+  color: #2F4F4F;
+  padding: 15px;
+  background: rgba(255, 20, 147, 0.05);
+  border-radius: 8px;
+}

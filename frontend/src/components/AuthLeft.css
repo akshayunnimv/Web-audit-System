@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Orbitron:wght@700&family=Audiowide&family=Dancing+Script:wght@700&family=Bebas+Neue&display=swap" rel="stylesheet');
+@import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Lilita+One&display=swap');
 
 .auth-left {
     position: relative;
@@ -96,5 +96,8 @@
   background-color: #f0f0f0;
 }
 
-  
+ .home-icon{
+  width:18px;
+  height:18px;
+ } 
   

@@ -6,6 +6,7 @@ import AdminIssuePolicy from "../components/AdminIssuePolicy";
 import AdminUsers from "../components/AdminUsers";
 import AdminStatistics from "../components/AdminStatistics";
 import AdminReview from "../components/AdminReview";
+import AdminReports from "../components/AdminReports";
 import "./AdminDashboard.css"; // optional styling
 
 const AdminDashboard = () => {
@@ -19,6 +20,7 @@ const AdminDashboard = () => {
           <Route path="users" element={<AdminUsers />} />
           <Route path="statistics" element={<AdminStatistics />} />
           <Route path="review" element={<AdminReview />} />
+          <Route path="reports" element={<AdminReports/>} />
         </Routes>
       </div>
     </div>

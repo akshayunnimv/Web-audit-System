@@ -450,6 +450,52 @@ const AdminStatistics = () => {
       borderWidth: 1
     }]
   };
+  const downloadCrawledUrlsCSV = async () => {
+    try {
+      // 1. Fetch crawled URLs with user names
+      const { data: urls, error } = await supabase
+        .from('tbl_crawledurls')
+        .select(`
+          url,
+          submitted_time,
+          status,
+          user_id,
+          tbl_user(name)
+        `)
+        .order('submitted_time', { ascending: false });
+  
+      if (error) throw error;
+  
+      // 2. Prepare CSV content
+      const headers = ['User Name', 'URL', 'Submitted Time (IST)', 'Status'];
+      const rows = urls.map(item => [
+        `"${item.tbl_user?.name || 'Unknown'}"`,
+        `"${item.url}"`,
+        `"${new Date(item.submitted_time).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}"`,
+        `"${item.status}"`
+      ]);
+  
+      // 3. Create CSV file
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.join(','))
+      ].join('\n');
+  
+      // 4. Trigger download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'crawled_urls_export.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  
+    } catch (err) {
+      console.error('Failed to export CSV:', err);
+      alert('Error generating CSV file');
+    }
+  };
 
   return (
     <div className="admin-content">
@@ -712,18 +758,29 @@ const AdminStatistics = () => {
 
               {/* Recent URLs */}
               <div className="chart-container">
-                <h4>Recent URLs</h4>
-                <div className="urls-list">
-                  {crawledUrls.slice(0, 5).map((url, index) => (
-                    <div key={url.url_id} className="url-item">
-                      <p><strong>{index + 1}.</strong> {url.url}</p>
-                      <span className={`status-badge ${url.status}`}>
-                        {url.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+  <h4>Recent URLs</h4>
+  <div className="urls-list">
+    {/* Sort by date (newest first) & take first 5 */}
+    {crawledUrls
+      .sort((a, b) => new Date(b.submitted_time) - new Date(a.submitted_time)) // Sort newest first
+      .slice(0, 5) // Take first 5
+      .map((url, index) => (
+        <div key={url.url_id} className="url-item">
+          <p><strong>{index + 1}.</strong> {url.url}</p>
+          <span className={`status-badge ${url.status}`}>
+            {url.status}
+          </span>
+          
+        </div>
+      ))}
+  </div>
+  <button 
+    className="download-csv-btn"
+    onClick={downloadCrawledUrlsCSV}
+  >
+    All URLs
+  </button>
+</div>
 
               {/* URL Stats Summary */}
               <div className="stats-summary">

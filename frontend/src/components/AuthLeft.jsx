@@ -17,7 +17,7 @@ const AuthLeft = () => {
       {/* Top Left - Home Button */}
       <button className="home-button" onClick={() => navigate("/")}>
         {/* Placeholder for Home Icon */}
-        <span className="icon">🏠</span> {/* replace with actual icon later */}
+        <span className="icon"><img className="home-icon" src="/home.png"></img> </span> {/* replace with actual icon later */}
         Home
       </button>
 

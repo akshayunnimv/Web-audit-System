@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseclient";
 import "./UserActivity.css";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { Document, Packer, Paragraph, TextRun } from "docx";
+import { saveAs } from "file-saver";
 
 const UserActivity = () => {
   const [urls, setUrls] = useState([]);
@@ -11,6 +12,7 @@ const UserActivity = () => {
   const [reportType, setReportType] = useState("PDF");
   const [currentPageURLs, setCurrentPageURLs] = useState(1);
   const [currentPageLogs, setCurrentPageLogs] = useState(1);
+  const [loading, setLoading] = useState(false);
   const itemsPerPage = 10;
   const userId = supabase.auth.getUser().then(({ data }) => data?.user?.id);
 
@@ -19,22 +21,28 @@ const UserActivity = () => {
   }, []);
 
   const fetchData = async () => {
-    const { data: urlData } = await supabase
-      .from("tbl_crawledurls")
-      .select("*")
-      .eq("user_id", await userId);
-  
-    const { data: logData } = await supabase
-      .from("tbl_log")
-      .select(`
-        *,
-        tbl_crawledurls (url)
-      `)
-      .eq("user_id", await userId)
-      .order("timestamp", { ascending: false });
-  
-    setUrls(urlData || []);
-    setLogs(logData || []);
+    setLoading(true);
+    try {
+      const { data: urlData } = await supabase
+        .from("tbl_crawledurls")
+        .select("*")
+        .eq("user_id", await userId)
+        .order("submitted_time", { ascending: false });
+    
+      const { data: logData } = await supabase
+        .from("tbl_log")
+        .select(`
+          *,
+          tbl_crawledurls (url)
+        `)
+        .eq("user_id", await userId)
+        .order("timestamp", { ascending: false });
+    
+      setUrls(urlData || []);
+      setLogs(logData || []);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelect = (url_id) => {
@@ -75,176 +83,176 @@ const UserActivity = () => {
         let y = 20;
         const pageHeight = doc.internal.pageSize.height;
         const margin = 20;
-  
+        
+        // Add title
+        doc.setFontSize(16);
+        doc.text("Website Audit Report", margin, y);
+        y += 10;
+        
+        // Add URL and timestamp
+        doc.setFontSize(12);
+        doc.text(`URL: ${urlItem.url}`, margin, y);
+        y += 10;
+        doc.text(`Checked On: ${new Date(urlItem.submitted_time).toLocaleString()}`, margin, y);
+        y += 15;
+
         // Helper function to add text with page breaks
-        const addText = (text, x, y, font = "normal", size = 12, indent = 0) => {
-          doc.setFontSize(size);
-          doc.setFont("helvetica", font);
-          const lines = doc.splitTextToSize(text, 180 - indent);
-          
+        const addTextWithPageBreak = (text, x, y, maxWidth) => {
+          const lines = doc.splitTextToSize(text, maxWidth);
           for (let i = 0; i < lines.length; i++) {
             if (y >= pageHeight - margin) {
               doc.addPage();
               y = margin;
             }
-            doc.text(lines[i], x + indent, y);
+            doc.text(lines[i], x, y);
             y += 7;
           }
           return y;
         };
-  
-        // Add header
-        y = addText("Site Intel Audit Report", margin, y, "bold", 16);
-        y = addText(`URL: ${urlItem.url}`, margin, y);
-        y = addText(`Checked At: ${new Date(urlItem.submitted_time).toLocaleString()}`, margin, y);
-        y += 10;
-  
-        // SEO Issues
-        y = addText("SEO Issues", margin, y, "bold", 14);
+
+        // SEO Issues Section
+        doc.setFontSize(14);
+        y = addTextWithPageBreak("SEO Issues", margin, y, 180);
         y += 5;
-  
-        if (seoIssues.length === 0) {
-          y = addText("- No issues found.", margin, y);
-        } else {
-          seoIssues.forEach((issue, index) => {
+        
+        if (seoIssues.length > 0) {
+          for (const [index, issue] of seoIssues.entries()) {
             const detail = issueDetails.find(i => i.issue_id === issue.issue_id);
             if (detail) {
-              y = addText(`${index + 1}. ${detail.issue_name}`, margin, y, "bold");
-              y = addText(`Description: ${detail.description}`, margin, y, "normal", 12, 5);
-              y = addText(`Severity: ${detail.severity}`, margin, y, "normal", 12, 5);
-              y = addText(`Recommendation: ${detail.recommendation}`, margin, y, "normal", 12, 5);
-              y += 5;
+              doc.setFont("helvetica", "bold");
+              y = addTextWithPageBreak(`${index + 1}. ${detail.issue_name}`, margin, y, 180);
+              doc.setFont("helvetica", "normal");
+              y = addTextWithPageBreak(`Description: ${detail.description || 'N/A'}`, margin + 5, y, 180);
+              y = addTextWithPageBreak(`Severity: ${detail.severity || 'N/A'}`, margin + 5, y, 180);
+              y = addTextWithPageBreak(`Recommendation: ${detail.recommendation}`, margin + 5, y, 180);
+              y += 10;
             }
-          });
-        }
-  
-        // UI/UX Issues
-        y += 10;
-        y = addText("UI/UX Issues", margin, y, "bold", 14);
-        y += 5;
-  
-        if (uiuxIssues.length === 0) {
-          y = addText("- No issues found.", margin, y);
+          }
         } else {
-          uiuxIssues.forEach((issue, index) => {
+          y = addTextWithPageBreak("No SEO issues found.", margin, y, 180);
+        }
+
+        // UI/UX Issues Section
+        doc.setFontSize(14);
+        y += 10;
+        y = addTextWithPageBreak("UI/UX Issues", margin, y, 180);
+        y += 5;
+        
+        if (uiuxIssues.length > 0) {
+          for (const [index, issue] of uiuxIssues.entries()) {
             const detail = issueDetails.find(i => i.issue_id === issue.issue_id);
             if (detail) {
-              y = addText(`${index + 1}. ${detail.issue_name}`, margin, y, "bold");
-              y = addText(`Description: ${detail.description}`, margin, y, "normal", 12, 5);
-              y = addText(`Severity: ${detail.severity}`, margin, y, "normal", 12, 5);
-              y = addText(`Recommendation: ${detail.recommendation}`, margin, y, "normal", 12, 5);
-              y += 5;
+              doc.setFont("helvetica", "bold");
+              y = addTextWithPageBreak(`${index + 1}. ${detail.issue_name}`, margin, y, 180);
+              doc.setFont("helvetica", "normal");
+              y = addTextWithPageBreak(`Description: ${detail.description || 'N/A'}`, margin + 5, y, 180);
+              y = addTextWithPageBreak(`Severity: ${detail.severity || 'N/A'}`, margin + 5, y, 180);
+              y = addTextWithPageBreak(`Recommendation: ${detail.recommendation}`, margin + 5, y, 180);
+              y += 10;
             }
-          });
+          }
+        } else {
+          y = addTextWithPageBreak("No UI/UX issues found.", margin, y, 180);
         }
-  
+
         doc.save(`Report_${urlItem.url_id}.pdf`);
       } else {
-        // Improved DOC generation with HTML formatting
-        const htmlContent = `
-          <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-            <head>
-              <meta charset="UTF-8">
-              <title>Site Intel Audit Report</title>
-              <style>
-                body {
-                  font-family: "Times New Roman", Times, serif;
-                  line-height: 1.5;
-                  margin: 20px;
-                }
-                h1 {
-                  color: #2c3e50;
-                  font-size: 18pt;
-                  border-bottom: 2px solid #2c3e50;
-                  padding-bottom: 5px;
-                }
-                h2 {
-                  color: #2c3e50;
-                  font-size: 16pt;
-                  margin-top: 20px;
-                  border-bottom: 1px solid #ddd;
-                  padding-bottom: 3px;
-                }
-                .url-info {
-                  margin-bottom: 20px;
-                }
-                .issue {
-                  margin-bottom: 15px;
-                  page-break-inside: avoid;
-                }
-                .issue-title {
-                  font-weight: bold;
-                  margin-bottom: 5px;
-                }
-                .issue-detail {
-                  margin-left: 20px;
-                  margin-bottom: 3px;
-                }
-                .no-issues {
-                  color: #666;
-                  font-style: italic;
-                }
-              </style>
-            </head>
-            <body>
-              <h1>Site Intel Audit Report</h1>
-              
-              <div class="url-info">
-                <p>URL:${urlItem.url}</p>
-                <p>Checked At: ${new Date(urlItem.submitted_time).toLocaleString()}</p>
-              </div>
-              
-              <h2>SEO Issues</h2>
-              ${seoIssues.length === 0 ? 
-                '<p class="no-issues">No SEO issues found.</p>' : 
-                seoIssues.map((issue, index) => {
-                  const detail = issueDetails.find(i => i.issue_id === issue.issue_id);
-                  return detail ? `
-                    <div class="issue">
-                      <div class="issue-title">${index + 1}. ${detail.issue_name}</div>
-                      <div class="issue-detail"><strong>Description:</strong> ${detail.description || 'N/A'}</div>
-                      <div class="issue-detail"><strong>Severity:</strong> ${detail.severity || 'N/A'}</div>
-                      <div class="issue-detail"><strong>Recommendation:</strong> ${detail.recommendation}</div>
-                    </div>
-                  ` : '';
-                }).join('')
-              }
-              
-              <h2>UI/UX Issues</h2>
-              ${uiuxIssues.length === 0 ? 
-                '<p class="no-issues">No UI/UX issues found.</p>' : 
-                uiuxIssues.map((issue, index) => {
-                  const detail = issueDetails.find(i => i.issue_id === issue.issue_id);
-                  return detail ? `
-                    <div class="issue">
-                      <div class="issue-title">${index + 1}. ${detail.issue_name}</div>
-                      <div class="issue-detail"><strong>Description:</strong> ${detail.description || 'N/A'}</div>
-                      <div class="issue-detail"><strong>Severity:</strong> ${detail.severity || 'N/A'}</div>
-                      <div class="issue-detail"><strong>Recommendation:</strong> ${detail.recommendation}</div>
-                    </div>
-                  ` : '';
-                }).join('')
-              }
-            </body>
-          </html>
-        `;
+        // DOCX Formatting
+        const doc = new Document({
+          sections: [{
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: "Website Audit Report", bold: true, size: 28 })],
+                spacing: { after: 200 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: `URL: ${urlItem.url}`, size: 22 })],
+                spacing: { after: 200 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: `Checked On: ${new Date(urlItem.submitted_time).toLocaleString()}`, size: 22 })],
+                spacing: { after: 400 }
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: "SEO Issues", bold: true, size: 24 })],
+                spacing: { after: 200 }
+              }),
+              ...(seoIssues.length > 0 ? 
+                seoIssues.flatMap((issue, i) => {
+                  const detail = issueDetails.find(d => d.issue_id === issue.issue_id);
+                  return detail ? [
+                    new Paragraph({
+                      children: [new TextRun({ text: `${i + 1}. ${detail.issue_name}`, bold: true })],
+                      spacing: { after: 100 }
+                    }),
+                    new Paragraph({
+                      children: [new TextRun(`Description: ${detail.description || 'N/A'}`)],
+                      spacing: { after: 100 }
+                    }),
+                    new Paragraph({
+                      children: [new TextRun(`Severity: ${detail.severity || 'N/A'}`)],
+                      spacing: { after: 100 }
+                    }),
+                    new Paragraph({
+                      children: [new TextRun(`Recommendation: ${detail.recommendation}`)],
+                      spacing: { after: 200 }
+                    })
+                  ] : [];
+                }) : [
+                  new Paragraph({
+                    children: [new TextRun("No SEO issues found.")],
+                    spacing: { after: 200 }
+                  })
+                ]
+              ),
+              new Paragraph({
+                children: [new TextRun({ text: "UI/UX Issues", bold: true, size: 24 })],
+                spacing: { after: 200 }
+              }),
+              ...(uiuxIssues.length > 0 ? 
+                uiuxIssues.flatMap((issue, i) => {
+                  const detail = issueDetails.find(d => d.issue_id === issue.issue_id);
+                  return detail ? [
+                    new Paragraph({
+                      children: [new TextRun({ text: `${i + 1}. ${detail.issue_name}`, bold: true })],
+                      spacing: { after: 100 }
+                    }),
+                    new Paragraph({
+                      children: [new TextRun(`Description: ${detail.description || 'N/A'}`)],
+                      spacing: { after: 100 }
+                    }),
+                    new Paragraph({
+                      children: [new TextRun(`Severity: ${detail.severity || 'N/A'}`)],
+                      spacing: { after: 100 }
+                    }),
+                    new Paragraph({
+                      children: [new TextRun(`Recommendation: ${detail.recommendation}`)],
+                      spacing: { after: 200 }
+                    })
+                  ] : [];
+                }) : [
+                  new Paragraph({
+                    children: [new TextRun("No UI/UX issues found.")],
+                    spacing: { after: 200 }
+                  })
+                ]
+              ),
+            ],
+          }],
+        });
 
-        // Create blob with proper MIME type
-        const blob = new Blob(['\ufeff', htmlContent], { type: "application/msword" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Report_${urlItem.url_id}.doc`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, `Report_${urlItem.url_id}.docx`);
       }
-  
+      const servertime=new Date().toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata' 
+      });
       // Insert log
       await supabase.from("tbl_log").insert({
         user_id: await userId,
         url_id: urlItem.url_id,
-        action: "report generated",
-        timestamp: new Date().toISOString(),
+        action: "Report Generated",
+        timestamp: servertime,
       });
     }
   
@@ -268,7 +276,6 @@ const UserActivity = () => {
     a.download = "activity_logs.csv";
     a.click();
   };
-  
 
   const paginatedURLs = urls.slice(
     (currentPageURLs - 1) * itemsPerPage,
@@ -349,78 +356,89 @@ const UserActivity = () => {
 
   return (
     <div className="user-activity-container">
-      <h2>Activity History</h2>
+      {loading ? (
+        <div className="loading-animation">
+          <div className="spinner"></div>
+          <p>Loading...</p>
+        </div>
+      ) : (
+        <>
+          <h2>Activity History</h2>
 
-      {/* Crawled URLs Section */}
-      <section className="section">
-        <h3>Crawled URLs</h3>
-        <select className="select-doc" value={reportType} onChange={(e) => setReportType(e.target.value)}>
-          <option value="PDF">PDF</option>
-          <option value="DOC">DOC</option>
-        </select>
-        <button className="button-activity" onClick={handleGenerateReport}>Generate Report</button>
+          {/* Crawled URLs Section */}
+          <section className="section">
+            <h3>Crawled URLs</h3>
+            <select className="select-doc" value={reportType} onChange={(e) => setReportType(e.target.value)}>
+              <option value="PDF">PDF</option>
+              <option value="DOC">DOC</option>
+            </select>
+            <button className="button-activity" onClick={handleGenerateReport}>Generate Report</button>
 
-        <table className="table-activity">
-          <thead>
-            <tr>
-              <th>Select</th>
-              <th>Sl No</th>
-              <th>URL</th>
-              <th>Checked Time</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedURLs.map((item, idx) => (
-              <tr key={`url-${item.url_id || idx}`}>
-                <td>
-                  {item.status === "completed" ? (
-                    <input
-                      type="checkbox"
-                      checked={selectedUrls.includes(item.url_id)}
-                      onChange={() => handleSelect(item.url_id)}
-                    />
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-                <td>{(currentPageURLs - 1) * itemsPerPage + idx + 1}</td>
-                <td>{item.url}</td>
-                <td>{new Date(item.submitted_time).toLocaleString()}</td>
-                <td>{item.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {renderURLPagination()}
-      </section>
+            <table className="table-activity">
+              <thead>
+                <tr>
+                  <th>Select</th>
+                  <th>Sl No</th>
+                  <th>URL</th>
+                  <th>Checked Time</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedURLs.map((item, idx) => (
+                  <tr key={`url-${item.url_id || idx}`}>
+                    <td>
+                      {item.status === "completed" ? (
+                        <input
+                          type="checkbox"
+                          checked={selectedUrls.includes(item.url_id)}
+                          onChange={() => handleSelect(item.url_id)}
+                        />
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                    <td>{(currentPageURLs - 1) * itemsPerPage + idx + 1}</td>
+                    <td>{item.url}</td>
+                    <td>{new Date(item.submitted_time).toLocaleString()}</td>
+                    <td><span className={`status-badge ${item.status}`}>
+                      
+                      {item.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {renderURLPagination()}
+          </section>
 
-      {/* Activity Logs Section */}
-      <section className="section">
-        <h3>Activity Logs</h3>
-        <button className="button-activitylog" onClick={handleExportCSV}>Export CSV</button>
-        <table className="table-activity">
-          <thead>
-            <tr>
-              <th>Sl No</th>
-              <th>URL</th>
-              <th>Action</th>
-              <th>Timestamp</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedLogs.map((log, idx) => (
-              <tr key={`log-${log.id || idx}-${new Date(log.timestamp).getTime()}`}>
-                <td>{(currentPageLogs - 1) * itemsPerPage + idx + 1}</td>
-                <td>{log.tbl_crawledurls?.url || "N/A"}</td>
-                <td>{log.action}</td>
-                <td>{new Date(log.timestamp).toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {renderLogPagination()}
-      </section>
+          {/* Activity Logs Section */}
+          <section className="section">
+            <h3>Activity Logs</h3>
+            <button className="button-activitylog" onClick={handleExportCSV}>Export CSV</button>
+            <table className="table-activity">
+              <thead>
+                <tr>
+                  <th>Sl No</th>
+                  <th>URL</th>
+                  <th>Action</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedLogs.map((log, idx) => (
+                  <tr key={`log-${log.id || idx}-${new Date(log.timestamp).getTime()}`}>
+                    <td>{(currentPageLogs - 1) * itemsPerPage + idx + 1}</td>
+                    <td>{log.tbl_crawledurls?.url || "N/A"}</td>
+                    <td>{log.action}</td>
+                    <td>{new Date(log.timestamp).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {renderLogPagination()}
+          </section>
+        </>
+      )}
     </div>
   );
 };

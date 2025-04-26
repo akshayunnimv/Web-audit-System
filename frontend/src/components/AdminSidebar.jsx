@@ -33,6 +33,12 @@ const AdminSidebar = () => {
           <img className="side-icon" src="/icons/user.png"></img> Users
         </li>
         <li
+          className={location.pathname === "/admin-dashboard/reports" ? "active" : ""}
+          onClick={() => handleNavigate("/admin-dashboard/reports")}
+        >
+          <img className="side-icon" src="/history.png"></img> Reports
+        </li>
+        <li
           className={location.pathname === "/admin-dashboard/statistics" ? "active" : ""}
           onClick={() => handleNavigate("/admin-dashboard/statistics")}
         >
