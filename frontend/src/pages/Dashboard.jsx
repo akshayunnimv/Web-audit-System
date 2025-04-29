@@ -46,7 +46,7 @@ const Dashboard = ({ user }) => {
         if (existingUser) {
           await supabase
             .from('tbl_user')
-            .update({ last_login, profile_picture })
+            .update({ last_login })
             .eq('id', id);
         } else {
           await supabase
