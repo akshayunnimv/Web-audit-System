@@ -117,9 +117,11 @@ class FeedbackRequest(BaseModel):
 @app.post("/submit-feedback/")
 async def submit_feedback(request: FeedbackRequest):
     try:
+        timestamp = datetime.now().isoformat()
         response = supabase.table("tbl_feedback").insert({
             "user_id": str(request.user_id),
-            "feedback": request.feedback
+            "feedback": request.feedback,
+            "date": timestamp
         }).execute()
         return {"message": "Feedback submitted successfully"}
     except Exception as e:

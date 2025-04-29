@@ -11,9 +11,15 @@ import "./Dashboard.css";
 
 const Dashboard = ({ user }) => {
   const [username, setUsername] = useState("");
+  const [minLoadingPassed, setMinLoadingPassed] = useState(false);
   const [updatingUserRecord, setUpdatingUserRecord] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMinLoadingPassed(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     let isMounted = true; // Track component mount status
@@ -79,7 +85,7 @@ const Dashboard = ({ user }) => {
     };
   }, [navigate, location.pathname]);
 
-  if (updatingUserRecord) {
+  if (updatingUserRecord || !minLoadingPassed) {
     return (
       <div className="user-update-loading">
         <div className="update-spinner"></div>
