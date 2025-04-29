@@ -43,16 +43,16 @@ const Login = () => {
     const userId = userData.id; // Get the user ID
 
     // ✅ Step 3: Update the `last_login` timestamp
-    const { error: updateError } = await supabase
-      .from("tbl_user")
-      .update({ last_login: new Date().toISOString() }) // Save the current timestamp
-      .eq("id", userId); // Update only this user
+    // const { error: updateError } = await supabase
+    //   .from("tbl_user")
+    //   .update({ last_login: new Date().toISOString() }) 
+    //   .eq("id", userId); 
 
-    if (updateError) {
-      console.error("Failed to update last login:", updateError);
-    } else {
-      console.log("Last login updated successfully!");
-    }
+    // if (updateError) {
+    //   console.error("Failed to update last login:", updateError);
+    // } else {
+    //   console.log("Last login updated successfully!");
+    // }
 
     // ✅ Step 4: Redirect to dashboard
     navigate("/dashboard");

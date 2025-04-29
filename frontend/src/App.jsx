@@ -41,7 +41,12 @@ function App() {
   }, [navigate, location.pathname]);
 
   if (loading) {
-    return <div className="loading-container">Loading...</div>;  // 🔹 Improve UI
+    return (
+      <div className="loading-container">
+        <div className="dot-pulse"></div>
+        <p className="loading-text">Loading your experience...</p>
+      </div>
+    );
   }
 
   return (
