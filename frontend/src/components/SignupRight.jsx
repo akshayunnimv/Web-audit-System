@@ -50,6 +50,17 @@ const SignupRight = () => {
       setError("Passwords do not match!");
       return;
     }
+    const phoneRegex = /^\d{10}$/;
+  if (!phoneRegex.test(phone)) {
+    setError("Phone number must be exactly 10 digits.");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    setError("Please enter a valid email address.");
+    return;
+  }
 
     // ✅ Step 1: Create a new user with Supabase Authentication
     const { data, error } = await supabase.auth.signUp({
