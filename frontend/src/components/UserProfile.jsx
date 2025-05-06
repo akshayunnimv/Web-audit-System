@@ -8,13 +8,21 @@ const UserProfile = () => {
   const [formData, setFormData] = useState({ name: "", phone: "", profile_picture: "" });
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
+  // Password change states
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     fetchUserProfile();
   }, []);
 
   const fetchUserProfile = async () => {
-    setLoading(true); // Start loading
+    setLoading(true);
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -35,7 +43,54 @@ const UserProfile = () => {
         });
       }
     }
-    setLoading(false); // End loading
+    setLoading(false);
+  };
+
+  // Password change handlers
+  const handlePasswordChange = async () => {
+    setPasswordError("");
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("New passwords don't match");
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    try {
+      // First verify current password
+      const { data: userData, error } = await supabase
+        .from("tbl_user")
+        .select("password")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+
+      if (userData.password !== passwordData.currentPassword) {
+        setPasswordError("Current password is incorrect");
+        return;
+      }
+
+      // Update password in tbl_user
+      const { error: updateError } = await supabase
+        .from("tbl_user")
+        .update({ password: passwordData.newPassword })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      alert("Password updated successfully!");
+      setShowPasswordModal(false);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+    } catch (error) {
+      setPasswordError("Failed to update password. Please try again.");
+      console.error("Password update error:", error);
+    }
   };
 
   const handleImageUpload = async (e) => {
@@ -63,16 +118,15 @@ const UserProfile = () => {
     setFormData((prev) => ({ ...prev, profile_picture: urlData.publicUrl }));
     setUploading(false);
   };
+
   const handleRemovePicture = async () => {
     const confirmed = window.confirm("Are you sure you want to remove your profile picture?");
     if (!confirmed) return;
   
-    // Extract file path from the URL
     const match = formData.profile_picture.match(/avatars\/[^?]+/);
     const filePath = match ? match[0] : null;
   
     if (filePath) {
-      // Delete the image from Supabase Storage
       const { error: deleteError } = await supabase
         .storage
         .from("profilepicture")
@@ -84,7 +138,6 @@ const UserProfile = () => {
       }
     }
   
-    // Update the database (remove the image link)
     const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase
       .from("tbl_user")
@@ -97,7 +150,6 @@ const UserProfile = () => {
       fetchUserProfile();
     }
   };
-  
 
   const handleUpdate = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -127,11 +179,7 @@ const UserProfile = () => {
     );
   }
 
-
   if (!userData) return <p>Loading profile...</p>;
-  
-
-
 
   return (
     <div className="user-profile-container">
@@ -193,10 +241,73 @@ const UserProfile = () => {
               <button onClick={() => setEditMode(false)}>Cancel</button>
             </>
           ) : (
-            <button onClick={() => setEditMode(true)}>Edit</button>
+            <>
+              <button onClick={() => setEditMode(true)}>Edit</button>
+              <button 
+                onClick={() => setShowPasswordModal(true)}
+                className="change-password-btn"
+              >
+                Change Password
+              </button>
+            </>
           )}
         </div>
       </div>
+
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Change Password</h3>
+            {passwordError && <p className="error-message">{passwordError}</p>}
+            <div className="form-group">
+              <label>Current Password:</label>
+              <input
+                type="password"
+                value={passwordData.currentPassword}
+                onChange={(e) => setPasswordData({
+                  ...passwordData,
+                  currentPassword: e.target.value
+                })}
+              />
+            </div>
+            <div className="form-group">
+              <label>New Password:</label>
+              <input
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({
+                  ...passwordData,
+                  newPassword: e.target.value
+                })}
+              />
+            </div>
+            <div className="form-group">
+              <label>Confirm New Password:</label>
+              <input
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({
+                  ...passwordData,
+                  confirmPassword: e.target.value
+                })}
+              />
+            </div>
+            <div className="modal-actions">
+              <button onClick={handlePasswordChange}>Update Password</button>
+              <button onClick={() => {
+                setShowPasswordModal(false);
+                setPasswordError("");
+                setPasswordData({
+                  currentPassword: "",
+                  newPassword: "",
+                  confirmPassword: ""
+                });
+              }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

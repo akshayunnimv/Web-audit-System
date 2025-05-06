@@ -79,7 +79,7 @@ const Home = () => {
             <p className="silver-text">"In web development, SEO issues refer to problems with a website's structure, code, or content that negatively impact its ability to be found and ranked well in search engine results pages (SERPs), hindering its visibility and organic traffic."</p>
           </div>
         </div>
-          <h2>HEading Later</h2>
+          <h2>The Issues We Detect!!!</h2>
           <p>Given below is the list of issue checks that are currently we can run on your webpage </p>
   <div className="issues-container">
     <div className="issues-column">
