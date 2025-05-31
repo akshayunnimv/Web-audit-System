@@ -169,7 +169,7 @@ const AdminReports = () => {
   };
 
   return (
-    <div className="user-activity-container">
+    <div className="admin-content">
       {loading ? (
         <div className="loading-animation">
           <div className="spinner"></div>
